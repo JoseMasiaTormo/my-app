@@ -9,15 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Libro;
 
 class LibroController extends AbstractController
-{
-    private $libros = [
-        1 => ["nombre" => "Indomable", "autor" => "David Tesch", "año" => "2022"],
-        2 => ["nombre" => "El infierno", "autor" => "Carmen Mola", "año" => "2023"],
-        5 => ["nombre" => "Mirafiori", "autor" => "Manuel Jabois", "año" => "2023"],
-        7 => ["nombre" => "La armadura de la luz", "autor" => "Ken Follet", "año" => "2023"],
-        9 => ["nombre" => "Éxtasis", "autor" => "Tracy Wolff", "año" => "2023"]
-    ];     
-
+{  
     #[Route('/libro/insertar/{nombre}/{autor}/{año}', name:'insertar_libro')]
     public function insertar(ManagerRegistry $doctrine, $nombre, $autor, $año) {
         $entityManager = $doctrine->getManager();

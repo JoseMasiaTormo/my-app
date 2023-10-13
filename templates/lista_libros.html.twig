@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+{% block title %}Libros{% endblock %}
+{% block body %}
+    <h1>Listado de Libros</h1>
+    {% if libros %}
+        {% for libro in libros %}
+            {{ include ('partials/datos_libro.html.twig', { 'libro': libro}) }}
+        {% endfor %}
+    {% else %}
+        <p>No se han encontrado Libros</p>
+    {% endif %}
+{% endblock %}

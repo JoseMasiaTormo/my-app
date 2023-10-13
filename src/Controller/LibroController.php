@@ -70,6 +70,15 @@ class LibroController extends AbstractController
         }
     }
 
+    #[Route('/libro', name: 'ficha_todos_libros')]
+    public function allLibros(ManagerRegistry $doctrine): Response {
+        $repositorio = $doctrine->getRepository(Libro::class);
+        $libros = $repositorio->findAll();
+        return $this->render('lista_libros.html.twig', [
+            'libros' => $libros
+        ]);
+    }
+
     #[Route('/libro/{codigo}', name: 'ficha_libro')]
     public function index(ManagerRegistry $doctrine, $codigo): Response
     {

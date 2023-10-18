@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Editorial;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,13 +11,40 @@ use App\Entity\Libro;
 
 class LibroController extends AbstractController
 {  
-    #[Route('/libro/insertar/{nombre}/{autor}/{año}', name:'insertar_libro')]
-    public function insertar(ManagerRegistry $doctrine, $nombre, $autor, $año) {
+    #[Route('/libro/insertar/{nombre}/{autor}/{año}/{editorial}', name:'insertar_libro')]
+    public function insertar(ManagerRegistry $doctrine, $nombre, $autor, $año, $editorial) {
         $entityManager = $doctrine->getManager();
+        $repositorio = $doctrine->getRepository(Editorial::class);
+        $editorial = $repositorio->findOneBy(["nombre" => $editorial]);
+
         $libro = new Libro();
         $libro->setNombre($nombre);
         $libro->setAutor($autor);
         $libro->setAño($año);
+        $libro->setEditorial($editorial);
+        $entityManager->persist($libro);
+
+        try {
+            $entityManager->flush();
+            return new Response("Libro insertado");
+        } catch (\Exception $e) {
+            return new Response("Error insertando objetos");
+        }
+    }
+
+    #[Route('/libro/insertarConEd/{nombre}/{autor}/{año}/{editorial}', name:'insertar_libro_conEd')]
+    public function insertarConEditorial(ManagerRegistry $doctrine, $nombre, $autor, $año, $editorial) {
+        $entityManager = $doctrine->getManager();
+        $ed = new Editorial();
+        $ed->setNombre($editorial);
+
+        $libro = new Libro();
+        $libro->setNombre($nombre);
+        $libro->setAutor($autor);
+        $libro->setAño($año);
+        $libro->setEditorial($ed);
+
+        $entityManager->persist($ed);
         $entityManager->persist($libro);
 
         try {

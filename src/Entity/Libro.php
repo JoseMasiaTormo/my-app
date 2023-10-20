@@ -20,7 +20,7 @@ class Libro
     private ?string $autor = null;
 
     #[ORM\Column]
-    private ?int $año = null;
+    private ?int $anyo = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -55,14 +55,14 @@ class Libro
         return $this;
     }
 
-    public function getAño(): ?int
+    public function getAnyo(): ?int
     {
-        return $this->año;
+        return $this->anyo;
     }
 
-    public function setAño(int $año): static
+    public function setAnyo(int $anyo): static
     {
-        $this->año = $año;
+        $this->anyo = $anyo;
 
         return $this;
     }

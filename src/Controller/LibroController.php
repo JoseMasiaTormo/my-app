@@ -6,34 +6,65 @@ use App\Entity\Editorial;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Libro;
+use App\Form\EditorialFormType;
+use App\Form\LibroFormType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 
 class LibroController extends AbstractController
-{  
-    #[Route('/libro/insertar/{nombre}/{autor}/{año}/{editorial}', name:'insertar_libro')]
-    public function insertar(ManagerRegistry $doctrine, $nombre, $autor, $año, $editorial) {
-        $entityManager = $doctrine->getManager();
-        $repositorio = $doctrine->getRepository(Editorial::class);
-        $editorial = $repositorio->findOneBy(["nombre" => $editorial]);
-
+{
+    #[Route('/libro/nuevo', name: 'nuevo_libro')]
+    public function nuevo(ManagerRegistry $doctrine, Request $request) {
         $libro = new Libro();
-        $libro->setNombre($nombre);
-        $libro->setAutor($autor);
-        $libro->setAño($año);
-        $libro->setEditorial($editorial);
-        $entityManager->persist($libro);
 
-        try {
-            $entityManager->flush();
-            return new Response("Libro insertado");
-        } catch (\Exception $e) {
-            return new Response("Error insertando objetos");
+        $formulario = $this->createForm(LibroFormType::class, $libro);
+        $formulario->handleRequest($request);
+
+            if ($formulario->isSubmitted() && $formulario->isValid()) {
+                $libro = $formulario->getData();
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($libro);
+                $entityManager->flush();
+                return $this->redirectToRoute('ficha_libro', ["codigo" => $libro->getId()]);
+            }
+        return $this->render('nuevo.html.twig', array(
+            'formulario' => $formulario->createView()
+        ));
+    }
+
+    #[Route('/libro/editar/{codigo}', name: 'editar_libro')]
+    public function editar(ManagerRegistry $doctrine, Request $request, $codigo) {
+        $repositorio = $doctrine->getRepository(Libro::class);
+        $libro = $repositorio->find($codigo);
+
+        if ($libro) {
+            $formulario = $this->createForm(LibroFormType::class, $libro);
+            $formulario->handleRequest($request);
+
+            if ($formulario->isSubmitted() && $formulario->isValid()) {
+                $libro = $formulario->getData();
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($libro);
+                $entityManager->flush();
+                return $this->redirectToRoute('ficha_libro', ["codigo" => $libro->getId()]);
+            }
+            return $this->render('editar.html.twig', array(
+                'formulario' => $formulario->createView()
+            ));
+        } else {
+            return $this->render('ficha_libro.html.twig', [
+                'libro' => NULL
+            ]);
         }
     }
 
-    #[Route('/libro/insertarConEd/{nombre}/{autor}/{año}/{editorial}', name:'insertar_libro_conEd')]
-    public function insertarConEditorial(ManagerRegistry $doctrine, $nombre, $autor, $año, $editorial) {
+    #[Route('/libro/insertarConEd/{nombre}/{autor}/{anyo}/{editorial}', name:'insertar_libro_conEd')]
+    public function insertarConEditorial(ManagerRegistry $doctrine, $nombre, $autor, $anyo, $editorial) {
         $entityManager = $doctrine->getManager();
         $ed = new Editorial();
         $ed->setNombre($editorial);
@@ -41,7 +72,7 @@ class LibroController extends AbstractController
         $libro = new Libro();
         $libro->setNombre($nombre);
         $libro->setAutor($autor);
-        $libro->setAño($año);
+        $libro->setAnyo($anyo);
         $libro->setEditorial($ed);
 
         $entityManager->persist($ed);
@@ -55,26 +86,22 @@ class LibroController extends AbstractController
         }
     }
 
-    #[Route('/libro/update/{id}/{nombre}', name: 'modificar_libro')]
-    public function update(ManagerRegistry $doctrine, $id, $nombre): Response {
-        $entityManager = $doctrine->getManager();
-        $repositorio = $doctrine->getRepository(Libro::class);
-        $libro = $repositorio->find($id);
-        if ($libro) {
-            $libro->setNombre($nombre);
-            try {
+    #[Route('/libro/nueva_ed', name:'nueva_ed')]
+    public function nueva_ed(ManagerRegistry $doctrine, Request $request) {
+        $ed = new Editorial();
+
+        $formulario = $this->createForm(EditorialFormType::class, $ed);
+        $formulario->handleRequest($request);
+
+            if ($formulario->isSubmitted() && $formulario->isValid()) {
+                $ed = $formulario->getData();
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($ed);
                 $entityManager->flush();
-                return $this->render('ficha_libro.html.twig', [
-                    'libro' => $libro
-                ]);
-            } catch (\Exception $e) {
-                return new Response("Error insertando objetos");
             }
-        } else {
-            return $this->render('ficha_libro.html.twig', [
-                'libro' => null
-            ]);
-        }
+            return $this->render('nueva_ed.html.twig', array(
+                'formulario' => $formulario->createView()
+        ));
     }
 
     #[Route('/libro/delete/{id}', name: 'borrar_libro')]
